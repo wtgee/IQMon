@@ -15,7 +15,7 @@ import re
 import stat
 import shutil
 import datetime
-import subprocess32 as subprocess
+import subprocess
 import logging
 import yaml
 import math
@@ -43,7 +43,7 @@ __version__ = '1.5.1'
 def mode(data, binsize):
     '''Function to calculate the mode of a distribution given the distribution
     and a binsize.
-    
+
     Parameters
     ----------
     data : list
@@ -51,7 +51,7 @@ def mode(data, binsize):
 
     binsize : float
         size of the bins in to which the data will be sorted
-    
+
     Returns
     -------
     (n, center) : tuple
@@ -76,7 +76,7 @@ class TelescopeConfigError(Exception):
 class Telescope(object):
     '''Object which contains information about the telescope which took the
     Image (see IQMon.Image object definition).
-    
+
     Parameters
     ----------
     config_file : string
@@ -170,16 +170,16 @@ class Telescope(object):
         catalog : Dictionary containing information about the stellar catalog
             which is matched to the detected stars to determine the zero point.
             The get_catalog() method will query Vizier using these parameters.
-        
+
             name : The name of the catalog which will be passed to a
                 astroquery.vizier.Vizier() instance.
-        
+
             columns : List of the column names to retrieve.  Defaults to
                 ['_RAJ2000','_DEJ2000','UCAC4','Bmag','Vmag','gmag','rmag','imag']
                 if the catalog is UCAC4.
-        
+
             magmax : Maximum magnitude to retrieve.
-        
+
             Remaining parameters are the dictionary which link the filter names
             in the fits header to the filter names in the Vizier catalog that is
             retrieved.  For example, if I want to compare the source extractor
@@ -386,11 +386,11 @@ class Telescope(object):
 class Image(object):
     '''Object which represents a single image to be analyzed.  When defined, the
     image objects requires a filename to a valid image (.fits or .cr2) file.
-    
+
     Input
     -----
     file : The path to the file to be analyzed.
-    
+
     tel : An IQMon.Telescope object which describes the telescope which took
         the image.
     '''
@@ -493,7 +493,7 @@ class Image(object):
         '''Add an existing logger object to the Image object.  Use this if
         calling from another program which has its own logger object, pass
         that logger to IQMon with this method.
-        
+
         Parameters
         ----------
         logger : logging.logger object
@@ -510,14 +510,14 @@ class Image(object):
     def make_logger(self, logfile=None, clobber=False, verbose=False, nofile=False):
         '''Create a logger object to use with this image.  The logger object
         will be available as self.logger.
-        
+
         Parameters
         ----------
         logfile : file to write log to
-        
+
         clobber : defaults to False.  If clobber is True, the old log file will
             be deleted.
-        
+
         verbose : Defaults to False.  If verbose is true, it sets the logging
             level to DEBUG (otherwise level is INFO).
         '''
@@ -671,7 +671,7 @@ class Image(object):
                                                 frame='icrs')
             except:
                 self.logger.debug('  Parsing: "{}" as hours and degrees failed'.format(coord_string))
-            
+
             if not self.coordinate_from_header:
                 self.logger.info('  Could not parse coordinate strings from header')
                 self.logger.info('  RA = {}'.format(self.header['RA']))
@@ -701,7 +701,7 @@ class Image(object):
         if self.observation_date and self.latitude and self.longitude and self.coordinate_from_header:
             ## Populate site object properties
             SiteDate = "/".join(self.observation_date[0:10].split("-"))
-            SiteTime = self.observation_date[11:]        
+            SiteTime = self.observation_date[11:]
             self.tel.site.date = ephem.Date(SiteDate+" "+SiteTime)
             self.tel.site.lat = str(self.latitude.to(u.deg).value)
             self.tel.site.lon = str(self.longitude.to(u.deg).value)
@@ -758,13 +758,13 @@ class Image(object):
     def edit_header(self, keyword, value, comment=None):
         '''Edit a single keyword in the image fits header.  File must have a
         .fts, .fits, or .fit extension.
-        
+
         Input
         -----
         keyword : a string representing a valid FITS keyword.
-        
+
         value : The value to enter for that keyword.
-        
+
         Parameters
         ----------
         comment : comment string for the keyword entry
@@ -836,13 +836,13 @@ class Image(object):
     def read_image(self, timeout=20):
         '''Read the raw image and write out a working image in the IQMon
         temporary directory.
-        
+
         If the raw file is a fits file (.fit, .fts, or .fits extension), the
         working file will be standardized to have a .fits file extension
-        
+
         If the raw file is a fits file and is found to be fpack compressed,
         the working file will be uncompressed.
-        
+
         If the raw file is a DSLR raw file (.cr2 or .dng), then the working file
         will be converted to a fits file.  First, dcraw is called to convert to
         a .ppm file using the -4 option which forces a linear conversion (no
@@ -850,7 +850,7 @@ class Image(object):
         file is ocnverted to a fits image using either the pamtofits or
         pnmtofits tools.  The final fits file will be three dimensional with the
         third dimension being the color channels (R, G, B).
-        
+
         Parameters
         ----------
         timeout : int, optional
@@ -1197,7 +1197,7 @@ class Image(object):
         else:
             ## Check if the image_WCS is actually an astropy.wcs.WCS object
             if isinstance(self.image_WCS, wcs.WCS):
-                ## By using the wcs to_header to make a new WCS object, we 
+                ## By using the wcs to_header to make a new WCS object, we
                 ## ensure that the CD matrix, if it exists, is converted to PC
                 header = wcs.WCS(self.image_WCS.to_header()).to_header()
                 if ('CTYPE1' in header.keys()) and ('CTYPE2' in header.keys()) and\
@@ -1353,7 +1353,7 @@ class Image(object):
             os.remove(sextractor_output_param_file)
         with open(sextractor_output_param_file, 'w') as defaultparamsFO:
             output_params = [
-                      'XWIN_IMAGE', 'YWIN_IMAGE', 
+                      'XWIN_IMAGE', 'YWIN_IMAGE',
                       'AWIN_IMAGE', 'BWIN_IMAGE', 'FWHM_IMAGE', 'THETAWIN_IMAGE',
                       'ERRAWIN_IMAGE', 'ERRBWIN_IMAGE', 'ERRTHETAWIN_IMAGE',
                       'ELONGATION', 'ELLIPTICITY',
@@ -1584,7 +1584,7 @@ class Image(object):
                 self.FWHM_average = np.average(CentralFWHMs, weights=weights) * u.pix
                 self.FWHM_average_uncertainty = (np.sum(weights))**-0.5 * u.pix
                 self.FWHM = self.FWHM_average
-                self.ellipticity_mode = mode(CentralEllipticities, 0.05) 
+                self.ellipticity_mode = mode(CentralEllipticities, 0.05)
                 self.ellipticity_median = np.median(CentralEllipticities)
                 self.ellipticity_average = np.average(CentralEllipticities, weights=weights)
                 self.ellipticity = self.ellipticity_median
@@ -1895,7 +1895,7 @@ class Image(object):
             self.tel.SExtractor_params['ANALYSIS_THRESH'] = threshold
         if area:
             self.tel.SExtractor_params['DETECT_MINAREA'] = area
-        
+
         ## Run SExtractor
         self.run_SExtractor()
         stars = [entry for entry in self.SExtractor_results if entry['FLAGS'] == 0]
@@ -2670,7 +2670,7 @@ class Image(object):
 
         ## Flip JPEG to account for difference in origins of FITS and jpg images
         im = im.transpose(Image.FLIP_TOP_BOTTOM)
-        
+
         ## Flip JPG if requested
         if transform:
             self.logger.debug('  Transforming (flipping/rotating) jpeg: {}'.format(transform))
@@ -3105,12 +3105,12 @@ class Image(object):
         tableMask = np.zeros(12)
         ## observation_date
         if self.observation_date: observation_date = self.observation_date
-        else: 
+        else:
             observation_date = ""
             tableMask[0] = True
         ## FileName
         if self.raw_file_name: raw_file_name = self.raw_file_name
-        else: 
+        else:
             raw_file_name = ""
             tableMask[1] = True
         ## FWHM
@@ -3150,7 +3150,7 @@ class Image(object):
             tableMask[8] = True
         ## n_stars_SExtracted
         if self.n_stars_SExtracted: n_stars_SExtracted = self.n_stars_SExtracted
-        else: 
+        else:
             n_stars_SExtracted = 0.
             tableMask[9] = True
         ## SExtractor Background
@@ -3184,7 +3184,7 @@ class Image(object):
     def calculate_process_time(self):
         '''
         Determine how long it took for IQMon to process this image.  Determined
-        by subtracting the starting time (determined on the initialization of 
+        by subtracting the starting time (determined on the initialization of
         the image object) to the ending time (determined by this method).
         '''
         self.end_process_time = datetime.datetime.now()
