@@ -1,4 +1,4 @@
-#!/usr/env/python
+#!/usr/bin/env python
 
 from __future__ import division, print_function
 
@@ -136,7 +136,7 @@ class ListOfNights(RequestHandler):
         first_date_string = sorted(collection.distinct("date"), reverse=False)[0]
         first_date = dt.strptime('{} 00:00:00'.format(first_date_string), '%Y%m%dUT %H:%M:%S')
         oneday = tdelta(1, 0)
-        
+
         tlog.app_log.info('  Building date_list')
         date_list = []
         thisdate = dt.utcnow()
@@ -157,7 +157,7 @@ class ListOfNights(RequestHandler):
                 night_info['night graph'] = night_graph_file
 
             night_info['n images'] = collection.find( {"date":date_string} ).count()
-            
+
             nights.append(night_info)
         tlog.app_log.info('  Done')
 
@@ -180,11 +180,11 @@ def main():
     ## create a parser object for understanding command-line arguments
     parser = ArgumentParser(description="Describe the script")
     ## add flags
-    parser.add_argument("--with-status",
-        action="store_true", dest="status",
-        default=False, help="Use status handler from custom_handlers.py")
+    parser.add_argument("--port", dest="port", default=8080, help="Port to run web server on. Default 8080")
+    parser.add_argument("--with-status", action="store_true", dest="status", default=False, help="Use status handler from custom_handlers.py")
     args = parser.parse_args()
 
+    # Setup logger
     LogConsoleHandler = logging.StreamHandler()
     LogConsoleHandler.setLevel(logging.DEBUG)
     LogFormat = logging.Formatter('%(asctime)23s %(levelname)8s: %(message)s')
@@ -214,7 +214,7 @@ def main():
 
 
     app = Application(list_of_handlers)
-    app.listen(80)
+    app.listen(args.port)
     IOLoop.current().start()
 
 if __name__ == '__main__':
