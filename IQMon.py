@@ -107,7 +107,7 @@ class Telescope(object):
             use
 
         pixel_scale : float containing the pixel scale in arcseconds per pixel.
-            If either the pixel_scale or both the focal_length and pixel_size
+            Either the pixel_scale or both the focal_length and pixel_size
             are required to be in the configuration file.
 
         focal_length : interger containing the focal length of the telescope in
@@ -878,6 +878,7 @@ class Image(object):
             self.logger.info('Making working copy of raw image: {}'.format(\
                                                             self.raw_file_name))
             self.working_file = os.path.join(self.tel.temp_file_path,\
+
                                              self.raw_file_name)
             shutil.copy2(self.raw_file, self.working_file)
             os.chmod(self.working_file, chmod_code)
@@ -886,29 +887,36 @@ class Image(object):
             self.uncompress()
         ## DSLR file:  convert to fits
         elif self.file_ext.lower() in ['.dng', '.cr2']:
-            self.logger.info('Converting {} to fits format'.format(\
-                                                            self.raw_file_name))
+
+            self.logger.info('Converting {} to fits format'.format(self.raw_file_name))
+
             ## Make copy of raw file
-            self.working_file = os.path.join(self.tel.temp_file_path, self.raw_file_name)
             self.logger.debug('Copying {} to {}'.format(self.raw_file, self.working_file))
+            self.working_file = os.path.join(self.tel.temp_file_path, self.raw_file_name)
             shutil.copy2(self.raw_file, self.working_file)
+
             self.logger.debug('Setting working file permissions for {}'.format(self.working_file))
             os.chmod(self.working_file, chmod_code)
             self.temp_files.append(self.working_file)
+
             ## Use dcraw to convert to ppm file
-            command = ['dcraw', '-t', '2', '-4', self.working_file]
             self.logger.debug('Executing dcraw: {}'.format(repr(command)))
+            command = ['dcraw', '-t', '2', '-4', self.working_file]
             subprocess.call(command, timeout=timeout)
             ppm_file = os.path.join(self.tel.temp_file_path, self.raw_file_basename+'.ppm')
+
             if os.path.exists(ppm_file):
                 self.working_file = ppm_file
                 self.temp_files.append(self.working_file)
             else:
                 self.logger.critical('dcraw failed.  Could not find ppm file.')
+
             ## Use pamtofits to convert to fits file
             fits_file = os.path.join(self.tel.temp_file_path, self.raw_file_basename+'.fits')
             if os.path.exists(fits_file): os.remove(fits_file)
+
             conversion_tools = ['pamtofits', 'pnmtofits']
+
             for conversion_tool in conversion_tools:
                 if not os.path.exists(fits_file):
                     command = '{} {} > {}'.format(conversion_tool, self.working_file, fits_file)
@@ -917,12 +925,14 @@ class Image(object):
                         subprocess.call(command, shell=True, timeout=timeout)
                     except:
                         pass
+
             if os.path.exists(fits_file):
                 self.working_file = fits_file
                 self.file_ext = self.file_ext = os.path.splitext(self.working_file)[1]
                 self.temp_files.append(self.working_file)
             else:
                 self.logger.critical('PPM to fits conversion failed.  Could not find fits file.')
+
             ## Write new fits file with only green image
             self.logger.debug('Only keeping green channel for analysis')
             with fits.open(self.working_file, 'update') as hdulist:
@@ -932,10 +942,8 @@ class Image(object):
                     hdulist[0].data = green_data
                     hdulist.flush()
         else:
-            self.logger.warning('Unrecognixed file extension: {}'.format(\
-                                                                self.file_ext))
-            self.working_file = os.path.join(self.tel.temp_file_path,\
-                                             self.raw_file_name)
+            self.logger.warning('Unrecognixed file extension: {}'.format(self.file_ext))
+            self.working_file = os.path.join(self.tel.temp_file_path, self.raw_file_name)
             raise IOError('Unrecognixed file extension: {}'.format(self.file_ext))
 
         end_time = datetime.datetime.now()
