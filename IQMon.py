@@ -15,14 +15,16 @@ import re
 import stat
 import shutil
 import datetime
-import subprocess
 import logging
 import yaml
 import math
 import numpy as np
 import pymongo
 from pymongo import MongoClient
-
+try:
+    import subprocess
+except ImportError:
+    import subprocess32 as subprocess
 
 ## Import Astronomy Specific Tools
 import ephem
