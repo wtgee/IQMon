@@ -107,7 +107,7 @@ class Telescope(object):
             use
 
         pixel_scale : float containing the pixel scale in arcseconds per pixel.
-            If either the pixel_scale or both the focal_length and pixel_size
+            Either the pixel_scale or both the focal_length and pixel_size
             are required to be in the configuration file.
 
         focal_length : interger containing the focal length of the telescope in
@@ -878,6 +878,7 @@ class Image(object):
             self.logger.info('Making working copy of raw image: {}'.format(\
                                                             self.raw_file_name))
             self.working_file = os.path.join(self.tel.temp_file_path,\
+
                                              self.raw_file_name)
             shutil.copy2(self.raw_file, self.working_file)
             os.chmod(self.working_file, chmod_code)
